@@ -1,0 +1,49 @@
+#!/command/with-contenv bash
+
+mkdir -p /run/sshd
+
+cat << EOF > /etc/ssh/sshd_config
+Port ${SSH_PORT:-22}
+
+Protocol 2
+
+HostKey /etc/ssh/ssh_host_ed25519_key
+
+KexAlgorithms curve25519-sha256@libssh.org
+Ciphers chacha20-poly1305@openssh.com
+MACs hmac-sha2-512
+
+PubkeyAuthentication yes
+PubkeyAcceptedKeyTypes ssh-ed25519,ssh-rsa
+AuthorizedKeysFile /etc/ssh/authorized_keys
+
+PermitRootLogin yes
+AllowUsers root
+
+StrictModes yes
+
+LoginGraceTime 120
+TCPKeepAlive yes
+MaxStartups 3:60:10
+
+HostbasedAuthentication no
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+UsePAM yes
+X11Forwarding no
+
+SyslogFacility AUTH
+LogLevel INFO
+EOF
+
+cat << EOF > /etc/ssh/authorized_keys
+${SSH_KEY}
+EOF
+
+chmod 600 /etc/ssh/authorized_keys
+
+# SSH login fix. Otherwise user is kicked off after login
+
+sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+
+echo "export VISIBLE=now" >> /etc/profile
