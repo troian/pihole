@@ -20,16 +20,30 @@ RUN cmake -DCMAKE_BUILD_TYPE=Release ..
 RUN make -j$(nproc)
 
 FROM pihole/pihole:${PIHOLE_DOCKER_TAG}
-
+ARG TARGETARCH
+ARG S6_OVERLAY_VERSION=v3.1.1.2
 ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG='C.UTF-8' LANGUAGE='C.UTF-8' LC_ALL='C.UTF-8'
+ENV LANG='C.UTF-8'
+ENV LANGUAGE='C.UTF-8'
+ENV LC_ALL='C.UTF-8'
 ENV DOTE_OPTS="-s 127.0.0.1:5053"
+ENV GS_DOCKER=1
 
 RUN apt update \
  && apt install --no-install-recommends -y \
         openssh-server \
         tzdata \
+        rsync \
+        git \
+        vim \
+        cron \
+ && curl -L -s "https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/syslogd-overlay-noarch.tar.xz" | tar Jxpf - -C / \
+ && curl -sOL https://cronitor.io/dl/linux_$TARGETARCH.tar.gz \
+ && tar xvf linux_$TARGETARCH.tar.gz -C /usr/bin/ \
+ && rm linux_$TARGETARCH.tar.gz \
+ && curl -sSL https://gravity.vmstan.com | bash \
  && rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
 
 COPY etc/ /etc/
+
 COPY --from=builder /workdir/DoTe/build/dote /opt/dote

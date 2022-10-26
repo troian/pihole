@@ -1,9 +1,7 @@
-#!/command/with-contenv bash
-
-mkdir -p /run/sshd
+#!/usr/bin/env bash
 
 cat << EOF > /etc/ssh/sshd_config
-Port ${SSH_PORT:-22}
+Port ${SSH_PORT:=22}
 
 Protocol 2
 
@@ -14,7 +12,7 @@ Ciphers chacha20-poly1305@openssh.com
 MACs hmac-sha2-512
 
 PubkeyAuthentication yes
-PubkeyAcceptedKeyTypes ssh-ed25519,ssh-rsa
+PubkeyAcceptedKeyTypes "${SSH_KEY_TYPES:=ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa}"
 AuthorizedKeysFile /etc/ssh/authorized_keys
 
 PermitRootLogin yes
@@ -27,7 +25,7 @@ TCPKeepAlive yes
 MaxStartups 3:60:10
 
 HostbasedAuthentication no
-PermitEmptyPasswords no
+PasswordAuthentication no
 ChallengeResponseAuthentication no
 UsePAM yes
 X11Forwarding no
@@ -41,6 +39,17 @@ ${SSH_KEY}
 EOF
 
 chmod 600 /etc/ssh/authorized_keys
+
+mkdir -p /root/.ssh
+
+cat <<EOF > /root/.ssh/config
+Host *
+    StrictHostKeyChecking no
+EOF
+
+if [ -n "${SSH_HOST_KEYS+x}" ]; then
+	cp -r "${SSH_HOST_KEYS}/*" /etc/ssh/
+fi
 
 # SSH login fix. Otherwise user is kicked off after login
 

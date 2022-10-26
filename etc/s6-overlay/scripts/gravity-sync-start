@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+gravity_sync=${GRAVITY_SYNC_ENABLE:-false}
+
+if [[ ${gravity_sync} == "true" ]]; then
+    printenv | sed 's/^\(.*\)$/export \1/g' > /root/project_env.sh
+    gravity-sync "${GRAVITY_SYNC_PERIOD:-smart}"
+
+cat << EOF > /etc/cron.d/gravity
+SHELL=/bin/bash
+${GRAVITY_SYNC_PERIOD:-*/5 * * * *} root . /root/project_env.sh; /usr/local/bin/gravity-sync ${GRAVITY_SYNC_PERIOD:-smart}
+EOF
+
+fi
