@@ -36,7 +36,6 @@ RUN apt update \
         rsync \
         git \
         vim \
-        cron \
  && curl -L -s "https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/syslogd-overlay-noarch.tar.xz" | tar Jxpf - -C / \
  && curl -sOL https://cronitor.io/dl/linux_$TARGETARCH.tar.gz \
  && tar xvf linux_$TARGETARCH.tar.gz -C /usr/bin/ \

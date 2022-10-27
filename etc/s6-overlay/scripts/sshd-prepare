@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 cat << EOF > /etc/ssh/sshd_config
-Port ${SSH_PORT:=22}
+Port ${SSH_PORT:=2223}
 
 Protocol 2
 
