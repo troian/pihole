@@ -1,5 +1,9 @@
 #!/command/with-contenv bash
 
+if [[ ${GS_ENABLE:=false} != true ]]; then
+    exit 0
+fi
+
 function valid_ip() {
     local ip=$1
     local stat=1
@@ -16,7 +20,6 @@ function valid_ip() {
     return $stat
 }
 
-enable=${GS_ENABLE:=false}
 mode=${GS_MODE:=smart}
 sync_period=${GS_SYNC_PERIOD:=*/5 * * * *}
 
@@ -32,39 +35,36 @@ ssh_port=$GS_SSH_PORT
 
 config_file=${GS_ETC_PATH}/$GS_CONFIG_FILE
 
-if [[ ${enable} == true ]]; then
-    if [[ -z $GS_REMOTE_HOST ]]; then
-        "echo variable GS_REMOTE_HOST is not set"
-        exit 1
-    fi
+if [[ -z $GS_REMOTE_HOST ]]; then
+    "echo variable GS_REMOTE_HOST is not set"
+    exit 1
+fi
 
-    if ! valid_ip "${GS_REMOTE_HOST}" ; then
-        GS_REMOTE_HOST=$(dig +short "$GS_REMOTE_HOST")
-        export GS_REMOTE_HOST
-    fi
+if ! valid_ip "${GS_REMOTE_HOST}" ; then
+    GS_REMOTE_HOST=$(dig +short "$GS_REMOTE_HOST")
+    export GS_REMOTE_HOST
+fi
 
-    remote_host=${GS_REMOTE_HOST}
+remote_host=${GS_REMOTE_HOST}
 
-    if [[ ! -f $config_file ]]; then
-        touch "$config_file"
-    fi
+if [[ ! -f $config_file ]]; then
+    touch "$config_file"
+fi
 
-    while IFS="=" read -r var val; do
-        # shellcheck disable=SC2001
-        echo "${var#"GS_"}=$val" >>"$config_file"
-        unset "$var"
-    done <<<$(env | grep ^"GS_LOCAL\|GS_REMOTE\|GS_PH")
+while IFS="=" read -r var val; do
+    # shellcheck disable=SC2001
+    echo "${var#"GS_"}=$val" >>"$config_file"
+    unset "$var"
+done <<<$(env | grep ^"GS_LOCAL\|GS_REMOTE\|GS_PH")
 
-    while IFS="=" read -r var val; do
-        echo "$var=$val" >>"$config_file"
-        unset "$var"
-    done <<<$(env | grep ^"GS_")
+while IFS="=" read -r var val; do
+    echo "$var=$val" >>"$config_file"
+    unset "$var"
+done <<<$(env | grep ^"GS_")
 
-    nc -zv "${remote_host}" "${ssh_port}" && gravity-sync "$mode"
+nc -zv "${remote_host}" "${ssh_port}" && gravity-sync "$mode"
 
-    cat <<EOF >/etc/cron.d/gravity
+cat <<EOF >/etc/cron.d/gravity
 SHELL=/bin/bash
 $sync_period root . /root/project_env.sh; nc -zv ${remote_host} ${ssh_port} && gravity-sync $mode
 EOF
-
-fi

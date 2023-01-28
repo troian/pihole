@@ -1,4 +1,9 @@
-#!/bin/sh
+#!/bin/bash
+
+if [[ ${SSHD_ENABLE:=false} != true ]]; then
+    s6-svc -O .
+    exit 0
+fi
 
 exec 2>&1
 exec /usr/sbin/sshd -D -e

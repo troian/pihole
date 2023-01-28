@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+if [[ ${SSHD_ENABLE:=false} != true ]]; then
+    exit 0
+fi
+
 cat << EOF > /etc/ssh/sshd_config
 Port ${SSH_PORT:=2223}
 
