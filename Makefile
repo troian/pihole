@@ -15,8 +15,7 @@ DOCKER_BUILD=docker build
 # use hyphens for arch specifications and substitute it later in place
 SUBIMAGES = amd64 \
  arm64-v8 \
- arm-v7 \
- arm-v6
+ arm-v7
 
 HYPHEN := -
 SLASH  := /
@@ -54,3 +53,8 @@ manifest-push:
 	@echo "pushing manifest $(IMAGE_NAME)"
 	docker manifest push $(IMAGE_NAME)
 	docker manifest push $(IMAGE_NAME_LATEST)
+
+.PHONY: gen-changelog
+gen-changelog:
+	@echo "generating changelog to changelog"
+	./scripts/genchangelog.sh $(shell git describe --tags --abbrev=0) changelog.md
