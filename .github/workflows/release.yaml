@@ -53,9 +53,5 @@ jobs:
           labels: ${{ steps.tags.outputs.labels }}
           build-args: |
             PIHOLE_DOCKER_TAG=${{ env.RELEASE_TAG }}
-      - name: Generate changelog
-        run: make gen-changelog
       - name: create release
         uses: softprops/action-gh-release@v1
-        with:
-          body_path: changelog.md
