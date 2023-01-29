@@ -1,20 +1,22 @@
 #!/usr/bin/env bash
 
+set -x
+
 if [[ ${TAILSCALE_ENABLE:=false} != true ]]; then
     exit 0
 fi
 
 accept_dns=${TAILSCALE_ACCEPT_DNS:-false}
 tailscale_hostname=${TAILSCALE_HOSTNAME:-${VIRTUAL_HOST:-pi.hole}}
-tailscale_args=${TAILSCALE_ARGS:=}
+
+declare -a args=(${TAILSCALE_ARGS:=})
+
+args+=("--accept-dns=${accept_dns}")
+args+=("--hostname=${tailscale_hostname}")
 
 if [[ -n ${TAILSCALE_AUTHKEY} ]]; then
-    if [[ -n ${tailscale_args} ]]; then
-        tailscale_args="--authkey=${TAILSCALE_AUTHKEY} ${tailscale_args}"
-    else
-        tailscale_args="--authkey=${TAILSCALE_AUTHKEY}"
-    fi
+    args+=("--authkey=${TAILSCALE_AUTHKEY}")
 fi
 
-# shellcheck disable=SC2086
-tailscale up  --hostname="${tailscale_hostname}" --accept-dns="${accept_dns}" ${tailscale_args}
+# shellcheck disable=SC2068
+tailscale up ${args[@]}

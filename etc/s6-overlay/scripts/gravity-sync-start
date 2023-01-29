@@ -1,6 +1,6 @@
 #!/command/with-contenv bash
 
-if [[ ${GS_ENABLE:=false} != true ]]; then
+if [[ ${SSHD_ENABLE:=false} != true ]] || [[ ${GS_ENABLE:=false} != true ]]; then
     exit 0
 fi
 
