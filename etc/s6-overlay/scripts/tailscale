@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -x
-
 if [[ ${TAILSCALE_ENABLE:=false} != true ]]; then
     exit 0
 fi

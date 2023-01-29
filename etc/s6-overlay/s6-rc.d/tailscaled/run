@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -x
 
 if [[ ${TAILSCALE_ENABLE:=false} != true ]]; then
     s6-svc -O .
