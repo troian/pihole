@@ -30,27 +30,16 @@ ENV DOTE_OPTS="-s 127.0.0.1:5053"
 ENV GS_DOCKER=1
 
 RUN \
-    export distro_name=$(cat /etc/*-release | grep VERSION_CODENAME |  cut -d '=' -f 2) \
- && curl -fsSL https://pkgs.tailscale.com/stable/debian/${distro_name}.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null \
- && curl -fsSL https://pkgs.tailscale.com/stable/debian/${distro_name}.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list \
- && apt update \
+    apt update \
  && apt install --no-install-recommends -y \
         openssh-server \
         tzdata \
         rsync \
-        git \
-        vim \
-        tailscale \
-        iptables \
-        libip4tc2 \
-        libip6tc2 \
-        libjansson4 \
-        libnetfilter-conntrack3 \
-        libnfnetlink0 \
-        libnftables1 \
-        libnftnl11 \
-        netbase \
-        nftables \
+        wget \
+        php-cli \
+        php-sqlite3 \
+        php-intl \
+        php-curl \
  && curl -L -s "https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/syslogd-overlay-noarch.tar.xz" | tar Jxpf - -C / \
  && curl -sOL https://cronitor.io/dl/linux_$TARGETARCH.tar.gz \
  && tar xvf linux_$TARGETARCH.tar.gz -C /usr/bin/ \
