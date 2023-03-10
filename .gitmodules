@@ -1,0 +1,3 @@
+[submodule "updatelists"]
+	path = updatelists
+	url = https://github.com/jacklul/pihole-updatelists.git
