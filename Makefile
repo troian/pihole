@@ -1,10 +1,10 @@
 REGISTRY           ?= ghcr.io
 TAG_VERSION        ?= $(shell git describe --tags --abbrev=0)
 
-ifeq ($(REGISTRY),)
-	IMAGE_NAME         := troian/pihole:$(TAG_VERSION)
-	IMAGE_NAME_LATEST  := troian/pihole:latest
-else
+IMAGE_NAME         := troian/pihole:$(TAG_VERSION)
+IMAGE_NAME_LATEST  := troian/pihole:latest
+
+ifneq ($(REGISTRY),)
 	IMAGE_NAME         := $(REGISTRY)/troian/pihole:$(TAG_VERSION)
 	IMAGE_NAME_LATEST  := $(REGISTRY)/troian/pihole:latest
 endif
@@ -43,10 +43,12 @@ docker-push: $(patsubst %, docker-push-%,$(SUBIMAGES))
 .PHONY: manifest-create
 manifest-create:
 	@echo "creating manifest $(IMAGE_NAME)"
-	docker maninfest rm $(IMAGE_NAME) 2> /dev/null || true
-	docker maninfest rm $(IMAGE_NAME_LATEST) 2> /dev/null || true
-	docker manifest create $(IMAGE_NAME) $(foreach arch,$(SUBIMAGES), --amend $(IMAGE_NAME)-$(subst $(HYPHEN),$(EMPTY),$(arch)))
-	docker manifest create $(IMAGE_NAME_LATEST) $(foreach arch,$(SUBIMAGES), --amend $(IMAGE_NAME_LATEST)-$(subst $(HYPHEN),$(EMPTY),$(arch)))
+	docker manifest rm $(IMAGE_NAME) 2> /dev/null || true
+	docker manifest rm $(IMAGE_NAME_LATEST) 2> /dev/null || true
+	docker manifest create $(IMAGE_NAME) \
+		$(foreach arch,$(SUBIMAGES), $(shell docker inspect $(IMAGE_NAME)-$(subst $(HYPHEN),$(EMPTY),$(arch)) | jq -r '.[].RepoDigests | .[0]'))
+	docker manifest create $(IMAGE_NAME_LATEST) \
+		$(foreach arch,$(SUBIMAGES), $(shell docker inspect $(IMAGE_NAME_LATEST)-$(subst $(HYPHEN),$(EMPTY),$(arch)) | jq -r '.[].RepoDigests | .[0]'))
 
 .PHONY: manifest-push
 manifest-push:
